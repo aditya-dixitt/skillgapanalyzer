@@ -33,15 +33,16 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(firebaseEnabled);
 
-  // Sign up with email and password
-  const signup = async (email, password, name, role = 'student') => {
+  // Sign up with email and password. Every new account is a student; admin
+  // access is granted in the Firebase console (firestore.rules enforce this).
+  const signup = async (email, password, name) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
     // Create user profile in Firestore
     const profile = {
       name,
       email,
-      role,
+      role: 'student',
       branch: '',
       year: null,
       career_interest: '',

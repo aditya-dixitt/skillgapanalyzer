@@ -56,6 +56,17 @@ Open http://localhost:3000. Firebase must be set up first (below); without it th
    npx firebase-tools deploy --only firestore --project <your-project-id>
    ```
 
+### Granting admin (placement cell) access
+
+Every new account is a student. Sign-up has no admin option, and `firestore.rules` reject any attempt to create or change a role. To make someone an admin:
+
+1. Have them sign up normally.
+2. In the Firebase console, open **Firestore Database → users → their document** (the ID is their UID from **Authentication → Users**).
+3. Set the `role` field to `admin`. Console edits bypass security rules.
+4. They sign out and back in, and the admin dashboard opens.
+
+Accounts created before this change could pick admin at sign-up. Check the `users` collection for unexpected `role: admin` documents and set those back to `student`.
+
 ## Environment variables
 
 Copy `.env.example` to `.env`. The Firebase variables are required; the rest are optional.
@@ -140,4 +151,3 @@ All user data lives in Firestore, written by `src/services/workspaceRepository.j
 - **GitHub API limits:** unauthenticated requests are limited to 60 per hour per IP, and one analysis uses about 9. The UI shows when the limit is hit.
 - **Resume parsing** reads text-based PDFs. Scanned (image-only) PDFs have no extractable text, and the UI explains this.
 - **Company profiles** reflect commonly reported interview emphasis, not official hiring criteria.
-- Sign-up still allows choosing a **Placement cell (admin)** account, as in the original app. For production, grant admin via Firebase custom claims or the console instead.
