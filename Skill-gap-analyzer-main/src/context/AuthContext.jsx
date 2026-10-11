@@ -1,19 +1,22 @@
 /**
  * Authentication Context
- * 
- * Provides authentication state and methods throughout the app.
- * Handles Firebase Auth and user role management.
+ *
+ * Provides authentication state and methods throughout the app using
+ * Firebase Auth, with the account profile in Firestore (users/{uid}).
+ * Without Firebase configuration the app shows a setup screen instead.
  */
 
-import { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  signInWithEmailAndPassword, 
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, db, firebaseEnabled } from '../config/firebase';
+import { FullPageSpinner } from '../components/ui/Spinner';
+import FirebaseSetup from '../components/common/FirebaseSetup';
 
 const AuthContext = createContext();
 
@@ -28,23 +31,26 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(firebaseEnabled);
 
-  // Sign up with email and password
-  const signup = async (email, password, name, role = 'student') => {
+  // Sign up with email and password. Every new account is a student; admin
+  // access is granted in the Firebase console (firestore.rules enforce this).
+  const signup = async (email, password, name) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
+
     // Create user profile in Firestore
-    await setDoc(doc(db, 'users', userCredential.user.uid), {
+    const profile = {
       name,
       email,
-      role,
+      role: 'student',
       branch: '',
       year: null,
       career_interest: '',
       skills: [],
-      createdAt: serverTimestamp()
-    });
+      createdAt: serverTimestamp(),
+    };
+    await setDoc(doc(db, 'users', userCredential.user.uid), profile);
+    setUserProfile({ id: userCredential.user.uid, ...profile });
 
     return userCredential.user;
   };
@@ -70,38 +76,43 @@ export const AuthProvider = ({ children }) => {
     return null;
   };
 
-  // Update user profile
-  const updateUserProfile = async (uid, data) => {
+  // Update the account-level profile (name, branch, year…)
+  const updateUserProfile = useCallback(async (uid, data) => {
     await setDoc(doc(db, 'users', uid), data, { merge: true });
     const updatedProfile = await fetchUserProfile(uid);
     setUserProfile(updatedProfile);
     return updatedProfile;
-  };
+  }, []);
 
   // Listen for auth state changes
   useEffect(() => {
+    if (!firebaseEnabled) return undefined;
     let unsubscribe;
-    
+
     try {
-      unsubscribe = onAuthStateChanged(auth, async (user) => {
-        setCurrentUser(user);
-        
-        if (user) {
-          try {
-            const profile = await fetchUserProfile(user.uid);
-            setUserProfile(profile);
-          } catch (err) {
-            console.error('Error fetching user profile:', err);
+      unsubscribe = onAuthStateChanged(
+        auth,
+        async (user) => {
+          setCurrentUser(user);
+
+          if (user) {
+            try {
+              const profile = await fetchUserProfile(user.uid);
+              setUserProfile(profile);
+            } catch (err) {
+              console.error('Error fetching user profile:', err);
+            }
+          } else {
+            setUserProfile(null);
           }
-        } else {
-          setUserProfile(null);
-        }
-        
-        setLoading(false);
-      }, (error) => {
-        console.error('Auth state error:', error);
-        setLoading(false);
-      });
+
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Auth state error:', error);
+          setLoading(false);
+        },
+      );
     } catch (error) {
       console.error('Firebase initialization error:', error);
       setLoading(false);
@@ -119,24 +130,17 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUserProfile,
     isAdmin: userProfile?.role === 'admin',
-    isStudent: userProfile?.role === 'student'
+    isStudent: userProfile?.role !== 'admin',
   };
+
+  if (!firebaseEnabled) {
+    return <FirebaseSetup />;
+  }
 
   // Show loading spinner while initializing
   if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-600 font-medium">Loading...</p>
-        </div>
-      </div>
-    );
+    return <FullPageSpinner label="Loading your workspace" />;
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
