@@ -23,6 +23,7 @@ React 18 · Vite · Tailwind CSS · Firebase (Auth + Firestore) · Gemini (optio
 | **Interview Prep** | Technical, coding, system design, behavioural, company-specific and project-based questions, with your focus areas first. Practice progress is saved. |
 | **GitHub Analyzer** | Scores a public GitHub profile out of 100 (portfolio size, recent activity, documentation, project diversity, role relevance, testing and CI), shows strengths and what needs work, and recommends projects. |
 | **Adaptive roadmaps** | Assessment scores under 60% bring fundamentals back; scores over 85% skip beginner content. Completing skills or projects, or changing your goal, triggers a re-plan. Completed work is always kept. |
+| **Campus analytics** (placement cell) | For admins: students, average readiness, job-ready count, recent activity and who needs attention; the readiness spread, a weekly trend, the most common skill gaps, and readiness by role or target company. A searchable, sortable student table with filters and CSV export. Built only from profiles and analysis snapshots; roadmaps, progress and resume, job and GitHub results stay private to each student. |
 
 Every piece of user data is stored in **Firebase** (see [Data in Firestore](#data-in-firestore)). Analysis and planning are deterministic and run in the app. Nothing pretends to call an external service: the GitHub analyzer calls GitHub's public API directly, and AI personalisation only runs when the server has a key.
 
@@ -40,7 +41,7 @@ Open http://localhost:3000. Firebase must be set up first (below); without it th
 | `npm run dev` | Vite dev server **with the `/api` routes mounted** (one process) |
 | `npm run build` | Production build to `dist/` |
 | `npm start` | Standalone Node server: serves `dist/` + `/api` on `PORT` (default 8080) |
-| `npm test` | Unit tests: analysis engine, planner, assessments, resume/JD parsing, simulator, GitHub scoring, Firestore document validity, API |
+| `npm test` | Unit tests: analysis engine, planner, assessments, resume/JD parsing, simulator, GitHub scoring, campus analytics, Firestore document validity, API |
 | `npm run deploy` | Build + `firebase deploy` (hosting, Firestore rules and indexes) |
 
 ## Firebase setup
@@ -109,7 +110,7 @@ src/
                  interview.js, assessments/ (question banks), options.js
   lib/           analysis.js, roadmap.js (planner), roadmapSchema.js (AI contract), progress.js,
                  assessment.js, projects.js, resume.js, jobDescription.js, textSkills.js,
-                 simulator.js, weekPlan.js, dependencyGraph.js, interview.js, github.js
+                 simulator.js, weekPlan.js, dependencyGraph.js, interview.js, github.js, campus.js
   services/      workspaceRepository.js (Firestore), roadmapService.js, aiService.js,
                  githubService.js (public REST API), pdfText.js (pdf.js, lazy-loaded), firestoreService.js
   context/       AuthContext, WorkspaceContext (state + actions), ToastContext
@@ -118,7 +119,7 @@ src/
   pages/         Dashboard, MySkills, SkillGap, Roadmap, Projects, Assessments, AssessmentRunner, Jobs,
                  Simulator, Careers, Interview, GitHubAnalyzer, Progress, Resources, Settings (Profile), ...
 server/          api.js (routes), gemini.js, prompt.js, index.js (production server), env.js
-tests/           engine.test.js, platform.test.js, firestore.test.js, api.test.js
+tests/           engine.test.js, platform.test.js, campus.test.js, firestore.test.js, api.test.js
 ```
 
 - **Business logic is pure and UI-free** (`src/lib`) and shared by the browser and the server.
