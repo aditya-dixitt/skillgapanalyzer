@@ -4,12 +4,13 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Globe2, Lock, Plus, Trash2, Copy, EyeOff, RefreshCw, Award } from 'lucide-react';
+import { Download, Globe2, Lock, Plus, Trash2, Copy, EyeOff, RefreshCw, Award, ScanSearch } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import Card, { CardHeader, CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Field, { describedBy, inputClass } from '../components/ui/Field';
 import { Modal, ConfirmDialog } from '../components/ui/Overlay';
+import { Notice } from '../components/ui/States';
 import PortfolioView from '../components/portfolio/PortfolioView';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
@@ -164,6 +165,22 @@ const Portfolio = () => {
         }
       />
 
+      {!analysis && (
+        <Notice
+          tone="accent"
+          icon={ScanSearch}
+          title="Your portfolio fills in after a skill analysis"
+          className="mb-4"
+          action={
+            <Button size="sm" to="/onboarding">
+              Analyze Skills
+            </Button>
+          }
+        >
+          Your target role, readiness score and skills come from it, and the PDF report needs it too.
+        </Notice>
+      )}
+
       <div className="grid gap-4 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <div className="space-y-4">
           <Card>
@@ -305,7 +322,7 @@ const Portfolio = () => {
 
         <div className="xl:sticky xl:top-20 xl:self-start">
           <p className="mb-2 text-xs font-medium text-muted">Preview: what visitors will see</p>
-          <PortfolioView data={snapshot} />
+          <PortfolioView data={snapshot} level={2} />
         </div>
       </div>
 

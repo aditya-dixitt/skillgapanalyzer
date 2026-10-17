@@ -24,7 +24,7 @@ const rank = (item) => (item.priority ? PRIORITY_ORDER.indexOf(item.priority) : 
 
 const Assessments = () => {
   const { analysis, role, progress, latestAssessments } = useWorkspace();
-  if (!analysis) return <NoAnalysisState title="No assessments yet" description="Analyze your skills first — we’ll recommend which skills to prove." />;
+  if (!analysis) return <NoAnalysisState page="Assessments" title="No assessments yet" description="Analyze your skills first — we’ll recommend which skills to prove." />;
 
   const levels = analysis.levels;
   const roleItems = analysis.items

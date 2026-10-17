@@ -44,6 +44,17 @@ export const emptySchedule = () => ({
   plan: null,
 });
 
+/**
+ * Starting hours for the availability form, from the daily time picked in
+ * onboarding. Matches the roadmap's own pace (six study days a week), so the
+ * calendar and the roadmap agree on when the plan finishes.
+ */
+export const suggestedAvailability = (dailyMinutes) => {
+  const perDay = Math.round((Number(dailyMinutes) / 60) * 2) / 2;
+  if (!(perDay > 0)) return emptySchedule().availability;
+  return Object.fromEntries(WEEKDAYS.map((d) => [d.id, d.id === 'sun' ? 0 : Math.min(perDay, 14)]));
+};
+
 export const normalizeSchedule = (raw) => {
   const base = emptySchedule();
   if (!raw) return base;

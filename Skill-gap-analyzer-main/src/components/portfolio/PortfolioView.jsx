@@ -5,23 +5,34 @@ import EvidenceBadge from '../skills/EvidenceBadge';
 
 const fmt = (date) => (date ? new Date(`${date.length === 7 ? `${date}-01` : date}T00:00:00`).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : '');
 
-const Section = ({ icon: Icon, title, children }) => (
-  <section className="border-t border-line px-6 py-5 sm:px-8">
-    <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-      <Icon className="h-4 w-4 text-muted" aria-hidden /> {title}
-    </h2>
-    <div className="mt-3">{children}</div>
-  </section>
-);
+const Section = ({ icon: Icon, title, level, children }) => {
+  const Heading = `h${level + 1}`;
+  return (
+    <section className="border-t border-line px-6 py-5 sm:px-8">
+      <Heading className="flex items-center gap-2 text-sm font-semibold text-ink">
+        <Icon className="h-4 w-4 text-muted" aria-hidden /> {title}
+      </Heading>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+};
 
 const CONTACT = { linkedin: [Linkedin, 'LinkedIn'], github: [Github, 'GitHub'], website: [Globe, 'Website'], email: [Mail, 'Email'] };
 
-/** The public portfolio. Used for the editor preview and the public page. */
-const PortfolioView = ({ data }) => (
+const NameHeading = ({ level, children }) => {
+  const Heading = `h${level}`;
+  return <Heading className="text-2xl font-semibold tracking-tight text-ink">{children}</Heading>;
+};
+
+/**
+ * The public portfolio. Used for the editor preview and the public page;
+ * `level` sets the heading level so the preview nests under its page's h1.
+ */
+const PortfolioView = ({ data, level = 1 }) => (
   <article className="overflow-hidden rounded-card border border-line bg-white shadow-card" aria-label={`${data.displayName || 'Portfolio'} career portfolio`}>
     <header className="flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-center sm:px-8">
       <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">{data.displayName || 'Your name'}</h1>
+        <NameHeading level={level}>{data.displayName || 'Your name'}</NameHeading>
         {data.headline && <p className="mt-1 text-sm text-ink-soft">{data.headline}</p>}
         {data.bio && <p className="mt-3 whitespace-pre-line text-sm text-muted">{data.bio}</p>}
       </div>
@@ -44,7 +55,7 @@ const PortfolioView = ({ data }) => (
     {data.role && <p className="px-6 pb-4 text-2xs text-muted sm:px-8">{data.role.note}</p>}
 
     {data.skills?.length > 0 && (
-      <Section icon={ShieldCheck} title="Skills">
+      <Section level={level} icon={ShieldCheck} title="Skills">
         <ul className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
           {data.skills.map((s) => (
             <li key={s.name}>
@@ -61,7 +72,7 @@ const PortfolioView = ({ data }) => (
     )}
 
     {data.assessments && (
-      <Section icon={ClipboardCheck} title="Verified results">
+      <Section level={level} icon={ClipboardCheck} title="Verified results">
         <ul className="space-y-1.5 text-sm">
           {data.assessments.practical.map((p) => (
             <li key={p.title} className="flex justify-between gap-3">
@@ -84,7 +95,7 @@ const PortfolioView = ({ data }) => (
     )}
 
     {data.projects?.length > 0 && (
-      <Section icon={FolderGit2} title="Projects">
+      <Section level={level} icon={FolderGit2} title="Projects">
         <ul className="space-y-2 text-sm">
           {data.projects.map((p) => (
             <li key={p.title}>
@@ -100,7 +111,7 @@ const PortfolioView = ({ data }) => (
     )}
 
     {data.github && (
-      <Section icon={Github} title="GitHub">
+      <Section level={level} icon={Github} title="GitHub">
         <p className="text-sm text-ink">
           <a href={data.github.url} target="_blank" rel="noreferrer noopener" className="font-medium hover:underline">
             @{data.github.username}
@@ -125,7 +136,7 @@ const PortfolioView = ({ data }) => (
     )}
 
     {data.milestones?.length > 0 && (
-      <Section icon={Flag} title="Roadmap milestones completed">
+      <Section level={level} icon={Flag} title="Roadmap milestones completed">
         <ul className="flex flex-wrap gap-2">
           {data.milestones.map((m) => (
             <li key={m.title} className="rounded-md bg-slate-100 px-2 py-1 text-xs text-ink">
@@ -138,7 +149,7 @@ const PortfolioView = ({ data }) => (
     )}
 
     {data.certificates?.length > 0 && (
-      <Section icon={Award} title="Certificates & achievements">
+      <Section level={level} icon={Award} title="Certificates & achievements">
         <ul className="space-y-1.5 text-sm">
           {data.certificates.map((c) => (
             <li key={c.name} className="flex flex-wrap items-baseline justify-between gap-x-3">
@@ -161,7 +172,7 @@ const PortfolioView = ({ data }) => (
     )}
 
     {data.contact && (
-      <Section icon={Link2} title="Contact">
+      <Section level={level} icon={Link2} title="Contact">
         <ul className="flex flex-wrap gap-3 text-sm">
           {Object.entries(data.contact).map(([key, value]) => {
             const [Icon, label] = CONTACT[key] || [Link2, key];

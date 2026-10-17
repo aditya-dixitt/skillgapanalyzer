@@ -16,7 +16,7 @@ import { EmptyState } from '../components/ui/States';
 import { useStudySchedule } from '../hooks/useStudySchedule';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useToast } from '../context/ToastContext';
-import { WEEKDAYS, EVENT_TYPES, EVENT_MAP, addDays, validateAvailability, validateEvent, weekDates, completedInRange } from '../lib/schedule';
+import { WEEKDAYS, EVENT_TYPES, EVENT_MAP, addDays, validateAvailability, validateEvent, weekDates, completedInRange, suggestedAvailability } from '../lib/schedule';
 import { buildIcs } from '../lib/ics';
 import { upcomingItems } from '../lib/applications';
 import { cx } from '../lib/cx';
@@ -208,7 +208,7 @@ const SessionItem = ({ session, done, onToggle, onMove, onUnpin, compact }) => {
 
 const StudyCalendar = () => {
   const cal = useStudySchedule();
-  const { tracker, progress } = useWorkspace();
+  const { tracker, progress, career } = useWorkspace();
   const toast = useToast();
   const [weekStart, setWeekStart] = useState(() => weekDates(cal.today)[0]);
   const [editing, setEditing] = useState(false);
@@ -249,14 +249,20 @@ const StudyCalendar = () => {
   };
 
   if (!schedule.configured) {
+    const dailyMinutes = career?.dailyMinutes;
+    const initial = dailyMinutes ? { ...schedule, availability: suggestedAvailability(dailyMinutes) } : schedule;
     return (
       <div>
         <PageHeader title="Study calendar" description="Turn your roadmap into a weekly timetable that fits your real week — and adapts around exams, deadlines and interviews." />
         <Card className="max-w-3xl p-6">
           <h2 className="text-[15px] font-semibold text-ink">When can you study?</h2>
-          <p className="mt-1 text-sm text-muted">Set different hours for each day. Weekdays during semester and weekends rarely look the same.</p>
+          <p className="mt-1 text-sm text-muted">
+            {dailyMinutes
+              ? `Filled in from the ${dailyMinutes >= 60 ? `${dailyMinutes / 60} hour${dailyMinutes === 60 ? '' : 's'}` : `${dailyMinutes} minutes`} a day you chose, the pace your roadmap is sized for. Adjust any day: weekdays during semester and weekends rarely look the same.`
+              : 'Set different hours for each day. Weekdays during semester and weekends rarely look the same.'}
+          </p>
           <div className="mt-5">
-            <AvailabilityForm initial={schedule} onSave={(patch) => save(patch, 'Your study calendar is ready')} saveLabel="Create my schedule" />
+            <AvailabilityForm initial={initial} onSave={(patch) => save(patch, 'Your study calendar is ready')} saveLabel="Create my schedule" />
           </div>
           {!roadmap && <p className="mt-4 text-xs text-muted">You don’t have a roadmap yet: sessions appear once you generate one.</p>}
         </Card>
@@ -353,7 +359,7 @@ const StudyCalendar = () => {
                 const past = date < cal.today;
                 const isToday = date === cal.today;
                 return (
-                  <li key={date} className={cx('flex min-h-[9rem] flex-col rounded-lg border p-2', isToday ? 'border-accent bg-accent-50/40' : 'border-line', past && 'opacity-60')}>
+                  <li key={date} className={cx('flex flex-col rounded-lg border p-2 md:min-h-[9rem]', isToday ? 'border-accent bg-accent-50/40' : 'border-line', past && 'opacity-60')}>
                     <div className="flex items-baseline justify-between gap-1">
                       <p className={cx('text-xs font-semibold', isToday ? 'text-accent-700' : 'text-ink')}>
                         {fmt(date, { weekday: 'short', day: 'numeric' })}

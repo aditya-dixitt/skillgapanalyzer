@@ -81,7 +81,7 @@ const Interview = () => {
     [role, analysis, latestAssessments, projectTitles],
   );
 
-  if (!plan) return <NoAnalysisState title="No interview plan yet" description="Pick a target role and add your skills to get questions tailored to it." />;
+  if (!plan) return <NoAnalysisState page="Interview Prep" title="No interview plan yet" description="Pick a target role and add your skills to get questions tailored to it." />;
 
   const practiced = progress.interview?.practiced || {};
   const isDone = (id) => Boolean(practiced[id]);

@@ -61,7 +61,7 @@ const Jobs = () => {
     return analyzeRole(buildCustomRole(jobToCustomRole(job.parsed)), career.skills);
   }, [job, analysis, career]);
 
-  if (!analysis) return <NoAnalysisState title="Add your skills first" description="We compare job descriptions against your skill profile." />;
+  if (!analysis) return <NoAnalysisState page="Jobs" title="Add your skills first" description="We compare job descriptions against your skill profile." />;
 
   const analyze = async () => {
     const parsed = parseJobDescription(text);

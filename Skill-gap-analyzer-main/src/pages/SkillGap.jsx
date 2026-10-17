@@ -70,7 +70,7 @@ const SkillGap = () => {
   );
   const graph = useMemo(() => (role && analysis ? buildDependencyGraph(role, analysis) : null), [role, analysis]);
 
-  if (!analysis) return <NoAnalysisState />;
+  if (!analysis) return <NoAnalysisState page="Skill Gap Analysis" />;
 
   const overrides = career.roadmapOverrides || {};
   const selectedId = params.get('skill');

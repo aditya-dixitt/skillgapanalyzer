@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSchedule, horizonFor, planSnapshot, missedSessions, validateEvent, validateAvailability, weekDates, weekdayOf, addDays, completedInRange, normalizeSchedule } from '../src/lib/schedule.js';
+import { buildSchedule, horizonFor, planSnapshot, missedSessions, validateEvent, validateAvailability, weekDates, weekdayOf, addDays, completedInRange, normalizeSchedule, suggestedAvailability, WEEKDAYS } from '../src/lib/schedule.js';
+import { weeklyHoursFor } from '../src/lib/roadmap.js';
 import { buildIcs, escapeText, foldLine } from '../src/lib/ics.js';
 
 const TODAY = '2026-10-12'; // a Monday
@@ -124,4 +125,16 @@ test('.ics export follows RFC 5545', () => {
   const folded = foldLine(`SUMMARY:${'x'.repeat(100)}`);
   assert.ok(folded.includes('\r\n '));
   assert.equal(folded.replace(/\r\n /g, ''), `SUMMARY:${'x'.repeat(100)}`);
+});
+
+test('suggested availability matches the weekly hours the roadmap is sized for', () => {
+  for (const minutes of [30, 60, 120, 180]) {
+    const availability = suggestedAvailability(minutes);
+    const total = WEEKDAYS.reduce((sum, d) => sum + availability[d.id], 0);
+    assert.equal(total, weeklyHoursFor(minutes), `${minutes} min/day`);
+    assert.equal(availability.sun, 0);
+    assert.ok(validateAvailability(availability, 2).ok);
+  }
+  assert.deepEqual(suggestedAvailability(undefined), normalizeSchedule(null).availability);
+  assert.deepEqual(suggestedAvailability(0), normalizeSchedule(null).availability);
 });

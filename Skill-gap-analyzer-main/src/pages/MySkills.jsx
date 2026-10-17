@@ -178,7 +178,7 @@ const SkillInventory = () => {
 
 const MySkills = ({ tab = 'skills' }) => {
   const { isOnboarded, insights } = useWorkspace();
-  if (!isOnboarded) return <NoAnalysisState />;
+  if (!isOnboarded) return <NoAnalysisState page="My Skills" />;
   return (
     <div>
       <PageHeader title="My Skills" description="Everything you know, how well you know it, and the evidence behind it." />
