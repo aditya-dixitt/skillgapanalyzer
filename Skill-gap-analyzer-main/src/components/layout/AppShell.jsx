@@ -12,6 +12,29 @@ import { ErrorState } from '../ui/States';
 import { Skeleton } from '../ui/Spinner';
 import ErrorBoundary from '../common/ErrorBoundary';
 
+/** Browser tab titles by first path segment. */
+const PAGE_TITLES = {
+  dashboard: 'Dashboard',
+  skills: 'My Skills',
+  gap: 'Skill Gap',
+  roadmap: 'Roadmap',
+  projects: 'Projects',
+  assessments: 'Assessments',
+  jobs: 'Jobs',
+  careers: 'Role Matches',
+  applications: 'Applications',
+  resume: 'Resume Analyzer',
+  calendar: 'Study Calendar',
+  market: 'Market Insights',
+  portfolio: 'Portfolio',
+  interview: 'Interview Prep',
+  github: 'GitHub Analyzer',
+  progress: 'Progress',
+  resources: 'Resources',
+  profile: 'Profile',
+  admin: 'Campus Analytics',
+};
+
 const SyncIndicator = () => {
   const { syncStatus } = useWorkspace();
   if (syncStatus === 'saving') {
@@ -53,6 +76,12 @@ const AppShell = () => {
   const { status, error, reload } = useWorkspace();
 
   useEffect(() => setDrawerOpen(false), [location.pathname]);
+
+  // Name the browser tab after the current page.
+  useEffect(() => {
+    const page = PAGE_TITLES[location.pathname.split('/')[1]];
+    document.title = page ? `${page} · SkillGap` : 'SkillGap';
+  }, [location.pathname]);
 
   useEffect(() => {
     const onKey = (event) => {

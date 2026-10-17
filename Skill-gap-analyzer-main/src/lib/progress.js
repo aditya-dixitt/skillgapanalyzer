@@ -13,6 +13,7 @@ export const emptyProgress = () => ({
   activity: [],
   lastSeenActivityAt: null,
   assessments: [],
+  verifications: [],
   projects: {},
   interview: { practiced: {} },
   weekChecks: {},
